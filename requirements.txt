@@ -1,0 +1,15 @@
+streamlit>=1.46.0
+transformers>=4.40.0 # Specify a recent version TRL is likely compatible with
+datasets>=2.10.0   # Specify a recent version
+huggingface_hub>=0.20.0
+trl>=0.8.0         # Assuming a recent TRL version
+torch>=2.0.0       # Needed for full TRL functionality; CPU version is fine for simulation
+accelerate>=0.25.0 # Often a core TRL/transformers dependency
+peft>=0.10.0       # For LoRA/QLoRA
+bitsandbytes>=0.41.0 # For QLoRA; requires CUDA for actual 4-bit training. Optional if not using QLoRA.
+sentencepiece      # Often required by tokenizers
+
+# Note: Specific versions for torch, accelerate, bitsandbytes might depend on your CUDA version
+# if you intend to perform actual GPU training. For this simulated UI, CPU versions or even
+# their absence (if TRL/transformers can handle it gracefully for some operations) might work,
+# but they are generally expected by the TRL ecosystem.
