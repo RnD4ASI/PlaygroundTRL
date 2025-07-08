@@ -1,121 +1,111 @@
-# Installation Guide for TRL Model Fine-Tuner UI
+# Installation Guide for TRL Model Fine-Tuner UI (Local MPS/CPU)
 
-This guide provides detailed instructions for setting up and running the TRL Model Fine-Tuner UI application.
+This guide provides detailed instructions for setting up and running the TRL Model Fine-Tuner UI application on your local machine, with a focus on Apple Silicon (M-series Macs with MPS) and CPU setups.
 
 ## Prerequisites
 
-*   **Python:** Python 3.9 or higher is recommended. You can check your Python version by running:
-    ```bash
-    python --version
-    ```
-    or
-    ```bash
-    python3 --version
-    ```
+*   **Python:** Python 3.9 or higher is recommended.
+*   **For MPS (Apple Silicon GPU):** macOS 12.3 or later is required for PyTorch MPS support.
+*   **Git (Optional):** If cloning from a repository.
 
 ## Setup Instructions
 
 ### 1. Clone the Repository (if applicable)
 
-If you have the project files in a repository, clone it to your local machine:
+If you have the project files in a repository, clone it:
 ```bash
 git clone <repository_url>
 cd <repository_directory>
 ```
-If you just have the `app.py` and other files, navigate to that directory.
+Otherwise, navigate to the directory containing `app.py` and other project files.
 
-### 2. Create a Python Virtual Environment (Recommended)
+### 2. Create a Python Virtual Environment (Highly Recommended)
 
-Using a virtual environment is highly recommended to manage dependencies and avoid conflicts with other Python projects.
+This isolates project dependencies.
 
-*   **Create the virtual environment:**
+*   **Create:**
     ```bash
-    python -m venv .venv
+    python3 -m venv .venv
     ```
-    (Replace `.venv` with your preferred environment name, e.g., `trl_ui_env`)
-
-*   **Activate the virtual environment:**
+    (Using `python3` is often more explicit on macOS)
+*   **Activate:**
     *   On macOS and Linux:
         ```bash
         source .venv/bin/activate
         ```
-    *   On Windows:
+    *   On Windows (for CPU-only usage):
         ```bash
         .\.venv\Scripts\activate
         ```
-    You should see the virtual environment's name in your shell prompt (e.g., `(.venv) user@host:...$`).
+    Your shell prompt should now indicate the active environment (e.g., `(.venv) user@host:...$`).
 
-### 3. Install Dependencies
+### 3. Install Dependencies from `requirements.txt`
 
-Once your virtual environment is activated, install the required Python packages using the `requirements.txt` file:
+With the virtual environment activated, install packages:
 ```bash
 pip install -r requirements.txt
 ```
-This command will install Streamlit, TRL, Transformers, and other necessary libraries.
+This will install Streamlit, TRL, Transformers, PyTorch, PEFT, etc.
 
-**Notes on Specific Dependencies:**
+**Important Notes on PyTorch (`torch`):**
 
-*   **`torch` (PyTorch):**
-    *   The `requirements.txt` file lists `torch>=2.0.0`. By default, `pip` will try to install a version compatible with your system, which might include CUDA support if you have an NVIDIA GPU and compatible drivers.
-    *   **For CPU-only environments (or if you encounter CUDA issues):** You can install a CPU-specific version of PyTorch if needed. Visit the [PyTorch website](https://pytorch.org/get-started/locally/) for the correct command for your OS and package manager (pip/conda). For example:
-        ```bash
-        # Example for pip, CPU only on Linux/Windows
-        pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+*   **For MPS (Apple Silicon):**
+    *   The `requirements.txt` lists `torch>=2.0.0`. Standard `pip install torch` on an M-series Mac should automatically install a version with MPS support.
+    *   Verify MPS availability in Python after installation:
+        ```python
+        import torch
+        if torch.backends.mps.is_available():
+            print("PyTorch MPS backend is available!")
+        else:
+            print("PyTorch MPS backend not available.")
         ```
-        Since this application **simulates** training, a CPU-only version of PyTorch is sufficient for the UI to function.
-    *   **For actual GPU training (outside this simulated UI):** Ensure your NVIDIA drivers, CUDA toolkit, and cuDNN are compatible with the PyTorch version you install.
+    *   If you encounter issues, you might need to consult the [official PyTorch website](https://pytorch.org/get-started/locally/) for specific commands tailored to your macOS version and desired PyTorch version.
 
-*   **`bitsandbytes`:**
-    *   This package is listed for QLoRA support. For actual 4-bit training, it requires a compatible CUDA environment.
-    *   Installation can sometimes be tricky. If you encounter issues and are only using the simulated UI, you might be able to proceed without it or with a CPU-only version if one exists that satisfies TRL's import checks, but full QLoRA functionality will not be available.
+*   **For CPU-only:**
+    *   If you are on a non-Mac system or wish to force CPU-only PyTorch, `pip install torch` usually works. If you need a specific CPU-only build, refer to the PyTorch website. The application will detect if MPS is unavailable and default to CPU.
+
+**Notes on Other Dependencies:**
+
+*   **`peft`:** Used for LoRA. QLoRA support (which relies on `bitsandbytes`) is **disabled** in this application as `bitsandbytes` is not generally compatible with MPS.
+*   **`sentencepiece`:** Often required by various tokenizers.
 
 ### 4. Running the Application
 
-Once dependencies are installed, you can run the Streamlit application:
+Once dependencies are installed:
 
 *   **Recommended command:**
     ```bash
-    python -m streamlit run app.py
+    python3 -m streamlit run app.py
     ```
-    This method is generally more robust in finding the Streamlit module.
-
-*   **Alternative command (if `streamlit` is in your PATH):**
+*   Alternative (if `streamlit` is in your PATH):
     ```bash
     streamlit run app.py
     ```
 
-The application should open in your default web browser, usually at `http://localhost:8501`.
+The application should open in your web browser (usually at `http://localhost:8501`). The Home page will indicate if MPS is detected and being used.
 
-## Troubleshooting Common Issues
+## Troubleshooting
 
-*   **`streamlit: command not found` or `python: No module named streamlit`:**
-    1.  **Ensure your virtual environment is activated.** This is the most common cause.
-    2.  **Verify Streamlit installation:**
-        ```bash
-        pip show streamlit
-        ```
-        If it's not listed or the location seems off, try reinstalling it within your activated virtual environment:
-        ```bash
-        pip install --force-reinstall streamlit
-        ```
-    3.  **Use `python -m streamlit run app.py`:** This explicitly tells Python to run Streamlit as a module and is often more reliable than relying on the `streamlit` script being in the system PATH, especially within virtual environments or complex Python setups.
+*   **`streamlit: command not found` or `No module named streamlit`:**
+    1.  Ensure your virtual environment is **activated**.
+    2.  Verify Streamlit installation: `pip show streamlit`. If missing or incorrect, reinstall: `pip install --force-reinstall streamlit`.
+    3.  Always prefer `python3 -m streamlit run app.py`.
 
-*   **Issues with `torch` or `bitsandbytes` CUDA versions:**
-    *   As mentioned, this application simulates training. If you are setting up an environment for *actual* TRL training, these errors usually mean there's a mismatch between your CUDA toolkit, NVIDIA drivers, and the installed versions of these packages. Consult their respective GitHub repositories and the NVIDIA documentation for compatibility matrices.
-    *   For this UI's simulated purposes, CPU-only versions or ensuring the basic Python parts of the libraries install correctly is the main goal. The UI itself does not perform CUDA operations.
+*   **PyTorch MPS Issues (`torch.backends.mps.is_available()` is `False`):**
+    1.  Ensure you are on macOS 12.3+ and have a compatible PyTorch version (>=1.12, ideally >=2.0).
+    2.  Try reinstalling PyTorch: `pip uninstall torch`, then `pip install torch`.
+    3.  Check for any known issues on the PyTorch GitHub repository related to your specific macOS and PyTorch versions.
+    4.  The application will fall back to CPU if MPS is not usable.
 
-*   **"No space left on device" during `pip install`:**
-    *   This can happen in resource-constrained environments (like some cloud sandboxes or Docker containers with small disk allocations).
-    *   **Solutions:**
-        *   Try to free up disk space.
-        *   Install packages one by one or in smaller groups.
-        *   Use the `--no-cache-dir` option with `pip install` to prevent caching large wheel files:
-            ```bash
-            pip install --no-cache-dir -r requirements.txt
-            ```
-        *   If installing `torch` with CUDA is the issue, try installing a CPU-only version first if that's acceptable for your immediate needs (see `torch` notes above).
+*   **Insufficient Memory/Performance Issues:**
+    *   Fine-tuning language models is resource-intensive. Even with MPS, large models or large batch sizes can exhaust unified memory or lead to slow performance.
+    *   **Recommendations:**
+        *   Start with smaller models (e.g., `gpt2`, `distilgpt2`).
+        *   Use smaller batch sizes (e.g., `per_device_train_batch_size = 1`).
+        *   Reduce `max_seq_length`.
+        *   Use LoRA (PEFT) to significantly reduce trainable parameters.
+        *   Train for fewer epochs initially.
 
 ## Next Steps
 
-Once the application is running, you can start configuring your (simulated) fine-tuning job by following the steps in the UI sidebar. Refer to the `README.md` for an overview of the application's features and workflow.
-```
+After successful installation, the application's Home page will guide you. Refer to `README.md` for an application overview. Remember that while this UI simplifies the process, understanding the underlying TRL and Hugging Face concepts is beneficial for effective fine-tuning.

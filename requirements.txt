@@ -1,15 +1,15 @@
 streamlit>=1.46.0
-transformers>=4.40.0 # Specify a recent version TRL is likely compatible with
-datasets>=2.10.0   # Specify a recent version
+transformers>=4.40.0
+datasets>=2.10.0
 huggingface_hub>=0.20.0
-trl>=0.8.0         # Assuming a recent TRL version
-torch>=2.0.0       # Needed for full TRL functionality; CPU version is fine for simulation
-accelerate>=0.25.0 # Often a core TRL/transformers dependency
-peft>=0.10.0       # For LoRA/QLoRA
-bitsandbytes>=0.41.0 # For QLoRA; requires CUDA for actual 4-bit training. Optional if not using QLoRA.
+trl>=0.8.0
+torch>=2.0.0       # For MPS support, PyTorch 1.12+ is generally needed. Standard pip install should work.
+accelerate>=0.25.0
+peft>=0.10.0       # For LoRA. QLoRA via bitsandbytes is not supported on MPS.
 sentencepiece      # Often required by tokenizers
 
-# Note: Specific versions for torch, accelerate, bitsandbytes might depend on your CUDA version
-# if you intend to perform actual GPU training. For this simulated UI, CPU versions or even
-# their absence (if TRL/transformers can handle it gracefully for some operations) might work,
-# but they are generally expected by the TRL ecosystem.
+# Note for MPS (Apple Silicon) users:
+# - PyTorch will use the 'mps' backend for GPU acceleration.
+# - bitsandbytes for 4-bit QLoRA is NOT compatible with MPS.
+#   This application will disable QLoRA options when targeting MPS.
+#   Standard LoRA fine-tuning via PEFT is supported.
